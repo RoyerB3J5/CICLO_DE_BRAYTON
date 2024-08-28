@@ -280,7 +280,7 @@ class Resultados(APIView):
             plt.xscale('log')
             plt.xlabel('Razón de presiones (pr)')
             plt.ylabel('Trabajo salida neto (kJ/kg)')
-            plt.title('Relación w_neto vs PR')
+            plt.title('Salida de trabajo vs PR')
             plt.grid(True)
             W_pr = io.BytesIO()
             plt.savefig(W_pr, format='png')
