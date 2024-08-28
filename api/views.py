@@ -174,23 +174,26 @@ class Resultados(APIView):
                 ts = np.linspace(t1, t2, steps)
                 ss = [CP.PropsSI('S', 'P', p1, 'T', t, fluid) / 1000 for t in ts]
                 return ts, ss
+            def isobaric_curve_by_entropy(p, s_start, s_end, steps=100):
+                ss = np.linspace(s_start, s_end, steps)
+                ts = [CP.PropsSI('T', 'S', s*1000, 'P', p, fluid) for s in ss]
+                return ts, ss
 
-            #PROCESO ADIABATICO
-            plt.figure(figsize=(10, 6))
-            ts, ss = adiabatic_curve(p_2, t_2, p_3, t_3)
-            plt.plot(ss, ts, linestyle='-', color='r')
-            ts, ss = adiabatic_curve(p_4, t_4, p_6, t_6)
-            plt.plot(ss, ts, linestyle='-', color='r')
-            ts, ss = adiabatic_curve(p_7, t_7, p_8, t_8)
-            plt.plot(ss, ts, linestyle='-', color='r')
-            ts, ss = adiabatic_curve(p_9, t_9, p_1, t_1)
-            plt.plot(ss, ts, linestyle='-', color='r')
+            #PROCESO ISOBARICO
+            ts, ss = isobaric_curve_by_entropy(p_4, s_4, s_6)
+            plt.plot(ss, ts, linestyle='-', color='g')
+            plt.plot([s_7, s_8], [t_7, t_8], linestyle='-', color='g', )
+            ts, ss = isobaric_curve_by_entropy(p_2, s_2, s_3)
+            plt.plot(ss, ts, linestyle='-', color='g')
+            plt.plot([s_9, s_10], [t_9, t_10], linestyle='-', color='g', )
+            ts, ss = isobaric_curve_by_entropy(p_10, s_10, s_1)
+            plt.plot(ss, ts, linestyle='-', color='g', label='Procesos isobáricos')
 
             # Procesos isoentrópicos (líneas rectas)
             plt.plot([s_3, s_4], [t_3, t_4], linestyle='--', color='b', )
             plt.plot([s_6, s_7], [t_6, t_7], linestyle='--', color='b', )
             plt.plot([s_8, s_9], [t_8, t_9], linestyle='--', color='b', )
-            plt.plot([s_1, s_2], [t_1, t_2], linestyle='--', color='b', )
+            plt.plot([s_1, s_2], [t_1, t_2], linestyle='--', color='b', label='Procesos isoentrópicos')
             globals().update({
                 's_1': s_1, 't_1': t_1,
                 's_2': s_2, 't_2': t_2,
