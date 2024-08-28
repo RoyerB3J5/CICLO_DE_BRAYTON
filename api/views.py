@@ -311,7 +311,7 @@ class Resultados(APIView):
             #POTENCIA DE SALIDA
             pot = round(((E_ent*w_neto)/q_ent)/1000,2)
             #RAZON DE TRABAJOS
-            r_w = round((w_turb_1 + w_turb_2)/(-2*w_comp),2)
+            r_w = round((w_neto)/(w_turb_1 + w_turb_2),2)
 
             calculos = [
                {'p_1': p_1/1000, 't_1': round(t_1-273.15,2), 's_1': s_1, 'h_1': h_1, 'v_1': v_1},
