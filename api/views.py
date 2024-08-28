@@ -159,7 +159,7 @@ class Resultados(APIView):
               p_values.append(p_values[0])
 
             plt.plot(v_values, p_values, marker='o', linestyle='-', color='r')
-            plt.xlabel('Volumen específico (kJ/kg.K)')
+            plt.xlabel('Volumen específico (m^3/kg)')
             plt.ylabel('Presión (KPa)')
             plt.title('Diagrama P vs v')
             plt.grid(True)
