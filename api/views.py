@@ -279,7 +279,7 @@ class Resultados(APIView):
             plt.plot(pr_values,ws_values, marker='o', color='b')
             plt.xscale('log')
             plt.xlabel('Razón de presiones (pr)')
-            plt.ylabel('Trabajo neto (w_neto)')
+            plt.ylabel('Trabajo salida neto (kJ/kg)')
             plt.title('Relación w_neto vs PR')
             plt.grid(True)
             W_pr = io.BytesIO()
