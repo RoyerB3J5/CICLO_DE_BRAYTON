@@ -230,6 +230,7 @@ class Resultados(APIView):
             ws_values = []
             n_values = []
             pot_values = []
+            r_w_values = []
             for rr in pr_values:
                 p_2_g1 =rr*p_1 #Presion 2 en Pa
                 t_2_g1 = t_1*(rr)**((k-1)/k) #Temperatura 2 en Kelvin
@@ -270,10 +271,12 @@ class Resultados(APIView):
                 w_neto_g1 = round(2*w_comp_g1 + w_turb_1_g1 + w_turb_2_g1,2)
                 n_g1 = round(w_neto_g1/q_in,2) 
                 pot_g1 = round(((E_ent*w_neto_g1)/q_ent)/1000,2)
+                r_w_g1 = round((w_neto_g1)/(w_turb_1_g1 + w_turb_2_g1),2)
 
                 n_values.append(n_g1)
                 ws_values.append(w_turb_1_g1+w_turb_2_g1)
                 pot_values.append(pot_g1)
+                r_w_values.append(r_w_g1)
 
 
             plt.plot(pr_values,ws_values, marker='o', color='b')
@@ -292,7 +295,7 @@ class Resultados(APIView):
             plt.xscale('log')
             plt.xlabel('Razón de presiones (pr)')
             plt.ylabel('eficiencia (n)')
-            plt.title('Relación n vs PR')
+            plt.title('n vs PR')
             plt.grid(True)
             n_pr = io.BytesIO()
             plt.savefig(n_pr, format='png')
@@ -310,6 +313,18 @@ class Resultados(APIView):
             plt.savefig(p_pr, format='png')
             p_pr.seek(0)
             image_p_pr = base64.b64encode(p_pr.getvalue()).decode('utf-8')
+            plt.close()
+
+            plt.plot(pr_values,r_w_values, 'o-', color='navy', label='Rendimiento de Trabajo')
+            plt.xscale('log')
+            plt.xlabel('Relación de Presión (PR)', fontsize=12)
+            plt.ylabel('Razón de trabajo', fontsize=12)
+            plt.title('Razón de trabajo vs Relación de Presión ', fontsize=14)
+            plt.grid(True, which="both", ls="--", linewidth=0.5)
+            rw_pr = io.BytesIO()
+            plt.savefig(rw_pr, format='png')
+            rw_pr.seek(0)
+            image_rw_pr = base64.b64encode(rw_pr.getvalue()).decode('utf-8')
             plt.close()
 
             #DIAGRAMA H vs s
@@ -374,7 +389,8 @@ class Resultados(APIView):
                 "image_W_pr": image_W_pr,
                 "image_n_pr": image_n_pr,
                 "image_h_s": image_h_s,
-                "image_p_pr": image_p_pr
+                "image_p_pr": image_p_pr,
+                "image_rw_pr": image_rw_pr
             })
         except Exception as e:           
           logger.error("Error occurred: %s", traceback.format_exc())
