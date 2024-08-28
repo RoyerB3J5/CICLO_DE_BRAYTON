@@ -85,9 +85,9 @@ class Resultados(APIView):
             #ESTADO 7
             p_7 = p_6/pr #Presion 7 en Pa
             t_7 = t_6/((pr)**((k-1)/k)) #Temperatura 7 en Kelvin
-            s_7_no = s_6 #Entropia en kJ/kg.K
+            s_7 = s_6 #Entropia en kJ/kg.K
             h_7 = round(CP.PropsSI('H','P',p_7,'T',t_7,fluid)/1000,3) #Entalpia en kJ/kg
-            s_7 = round(CP.PropsSI('S','P',p_7,'T',t_7,fluid)/1000,3) #Entropia en kJ/kg.K
+            s_7_no = round(CP.PropsSI('S','P',p_7,'T',t_7,fluid)/1000,3) #Entropia en kJ/kg.K
             d_7 = CP.PropsSI('D','T',t_7,'P',p_7,fluid) #Volumen especifico en m3/kg
             v_7 = round(1/d_7,3)
 
@@ -102,9 +102,9 @@ class Resultados(APIView):
             #ESTADO 9
             p_9 = p_8/pr #Presion 9 en Pa
             t_9 = t_8/((pr)**((k-1)/k)) #Temperatura 9 en Kelvin
-            s_9_no=s_8 #Entropia 9 en kJ/kg.K
+            s_9=s_8 #Entropia 9 en kJ/kg.K
             h_9 = round(CP.PropsSI('H','P',p_9,'T',t_9,fluid)/1000,3) #Entalpia en kJ/kg
-            s_9 = round(CP.PropsSI('S','P',p_9,'T',t_9,fluid)/1000,3) #Entropia en kJ/kg.K
+            s_9_no = round(CP.PropsSI('S','P',p_9,'T',t_9,fluid)/1000,3) #Entropia en kJ/kg.K
             d_9 = CP.PropsSI('D','T',t_9,'P',p_9,fluid) #Volumen especifico en m3/kg
             v_9 = round(1/d_9,3)
 
@@ -170,10 +170,6 @@ class Resultados(APIView):
             plt.close()
 
             #DIAGRAMA T vs s
-            def adiabatic_curve(p1, t1, p2, t2, steps=100):
-                ts = np.linspace(t1, t2, steps)
-                ss = [CP.PropsSI('S', 'P', p1, 'T', t, fluid) / 1000 for t in ts]
-                return ts, ss
             def isobaric_curve_by_entropy(p, s_start, s_end, steps=100):
                 ss = np.linspace(s_start, s_end, steps)
                 ts = [CP.PropsSI('T', 'S', s*1000, 'P', p, fluid) for s in ss]
@@ -230,9 +226,10 @@ class Resultados(APIView):
             plt.close()
 
             #GRAFICA 3
-            pr_values = np.arange(2, 11,1)
-            w_neto_values = []
+            pr_values = np.arange(2, 10,1)
+            ws_values = []
             n_values = []
+            pot_values = []
             for rr in pr_values:
                 p_2_g1 =rr*p_1 #Presion 2 en Pa
                 t_2_g1 = t_1*(rr)**((k-1)/k) #Temperatura 2 en Kelvin
@@ -272,13 +269,17 @@ class Resultados(APIView):
                 w_turb_2_g1 = h_8_g1-h_9_g1
                 w_neto_g1 = round(2*w_comp_g1 + w_turb_1_g1 + w_turb_2_g1,2)
                 n_g1 = round(w_neto_g1/q_in,2) 
+                pot_g1 = round(((E_ent*w_neto_g1)/q_ent)/1000,2)
 
                 n_values.append(n_g1)
-                w_neto_values.append(w_neto_g1)
+                ws_values.append(w_turb_1_g1+w_turb_2_g1)
+                pot_values.append(pot_g1)
 
-            plt.plot(pr_values,w_neto_values, marker='o', color='b')
+
+            plt.plot(pr_values,ws_values, marker='o', color='b')
+            plt.xscale('log')
             plt.xlabel('Razón de presiones (pr)')
-            plt.ylabel('Trbajo neto (w_neto)')
+            plt.ylabel('Trabajo neto (w_neto)')
             plt.title('Relación w_neto vs PR')
             plt.grid(True)
             W_pr = io.BytesIO()
@@ -288,6 +289,7 @@ class Resultados(APIView):
             plt.close()
 
             plt.plot(pr_values, n_values, marker='o', color='b')
+            plt.xscale('log')
             plt.xlabel('Razón de presiones (pr)')
             plt.ylabel('eficiencia (n)')
             plt.title('Relación n vs PR')
@@ -298,14 +300,45 @@ class Resultados(APIView):
             image_n_pr = base64.b64encode(n_pr.getvalue()).decode('utf-8')
             plt.close()
 
+            plt.plot(pr_values, pot_values, marker='o', color='b')
+            plt.xscale('log')
+            plt.xlabel('Razón de presiones (pr)')
+            plt.ylabel('Potencia de Salida (MW)')
+            plt.title('Potencia de salida vs PR')
+            plt.grid(True)
+            p_pr = io.BytesIO()
+            plt.savefig(p_pr, format='png')
+            p_pr.seek(0)
+            image_p_pr = base64.b64encode(p_pr.getvalue()).decode('utf-8')
+            plt.close()
+
+            #DIAGRAMA H vs s
+            states = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11']
+            h_values = [h_1, h_2, h_3, h_4, h_5, h_6, h_7, h_8, h_9, h_10, h_11]
+            s_values = [s_1, s_2, s_3, s_4, s_5, s_6, s_7, s_8, s_9, s_10, s_11]
+            plt.figure(figsize=(10, 6))
+            plt.plot(s_values, h_values, marker='o', linestyle='-', color='b')
+            for i, state in enumerate(states):
+                plt.text(s_values[i], h_values[i], f'{state}', fontsize=12, ha='right')
+            plt.title('Diagrama h-s (Entalpía vs Entropía)')
+            plt.xlabel('Entropía (s) [kJ/kg.K]')
+            plt.ylabel('Entalpía (h) [kJ/kg]')
+            plt.grid(True)
+            h_s = io.BytesIO()
+            plt.savefig(h_s, format='png')
+            h_s.seek(0)
+            image_h_s = base64.b64encode(h_s.getvalue()).decode('utf-8')
+            plt.close()
+
             #------RESULTADOS------
             #TRABAJO NETO
             w_comp = round((h_1-h_2),2)
             w_turb_1 = round((h_6-h_7),2)
             w_turb_2 = round((h_8-h_9),2)
             w_neto = round(2*w_comp + w_turb_1 + w_turb_2,2) #Trabajo neto en KJ/kg
-            #CALOR
-             #Calor en KJ/kg
+
+
+
             #EFICIENCIA
             n = round(w_neto/q_in,2) #Eficiencia
             #POTENCIA DE SALIDA
@@ -339,7 +372,9 @@ class Resultados(APIView):
                 "image_p_v": image_p_v,
                 "image_T_s": image_T_s,
                 "image_W_pr": image_W_pr,
-                "image_n_pr": image_n_pr
+                "image_n_pr": image_n_pr,
+                "image_h_s": image_h_s,
+                "image_p_pr": image_p_pr
             })
         except Exception as e:           
           logger.error("Error occurred: %s", traceback.format_exc())
